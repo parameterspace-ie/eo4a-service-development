@@ -25,11 +25,11 @@ do
     G_BAND=`find *.SAFE -name "*B03*jp2" -print|sort|head -1`
     B_BAND=`find *.SAFE -name "*B02*jp2" -print|sort|head -1`
     
-    PREFIX=`echo $PRODUCT|cut -d. -f1`
+    PREFIX=`basename $PRODUCT|cut -d. -f1`
     
     gdalbuildvrt -separate rgb.vrt $R_BAND $G_BAND $B_BAND
     gdal_translate -co COMPRESS=LZW rgb.vrt "$PREFIX"_RGB.tif
     
-    rm -rf $PRODUCT *.SAFE rgb.vrt
+    rm -rf *.SAFE rgb.vrt
 done
     
