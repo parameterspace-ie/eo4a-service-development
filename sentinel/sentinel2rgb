@@ -1,0 +1,30 @@
+#!/bin/sh -x
+
+# Service matching the Sentinel2Rgb WPS definition.
+
+# TODO: validation
+
+S2_PRODUCT_DIR=$1
+OUTPUT_DIR=$2
+
+cd $OUTPUT_DIR
+
+for PRODUCT in $S2_PRODUCT_DIR/*.zip
+do
+    cp $PRODUCT .
+    unzip $PRODUCT
+    
+    # Should handle both level 1C and 2A products
+    
+    R_BAND=`find *.SAFE -name "*B04*jp2" -print|sort|head -1`
+    G_BAND=`find *.SAFE -name "*B03*jp2" -print|sort|head -1`
+    B_BAND=`find *.SAFE -name "*B02*jp2" -print|sort|head -1`
+    
+    PREFIX=`echo $PRODUCT|cut -d. -f1`
+    
+    gdalbuildvrt -separate rgb.vrt $R_BAND $G_BAND $B_BAND
+    gdal_translate -co COMPRESS=LZW rgb.vrt "$PREFIX"_RGB.tif
+    
+    rm -rf $PRODUCT *.SAFE rgb.vrt
+done
+    
