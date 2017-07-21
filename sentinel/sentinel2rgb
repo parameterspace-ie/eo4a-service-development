@@ -22,9 +22,9 @@ do
     
     # Should handle both level 1C and 2A products
     
-    R_BAND=`find *.SAFE -name "*$RESOLUTION*B04*jp2" -print|sort|head -1`
-    G_BAND=`find *.SAFE -name "*$RESOLUTION*B03*jp2" -print|sort|head -1`
-    B_BAND=`find *.SAFE -name "*$RESOLUTION*B02*jp2" -print|sort|head -1`
+    R_BAND=`find *.SAFE -type f -regex ".*$RESOLUTION.*B04.*jp2" -print|sort|head -1`
+    G_BAND=`find *.SAFE -type f -regex ".*$RESOLUTION.*B03.*jp2" -print|sort|head -1`
+    B_BAND=`find *.SAFE -type f -regex ".*$RESOLUTION.*B02.*jp2" -print|sort|head -1`
     
     PREFIX=`basename $PRODUCT|cut -d. -f1`
     
