@@ -41,7 +41,7 @@ class Sentinel2Rgb(EO4AProcess):
         ]
 
         super(Sentinel2Rgb, self).__init__(
-            identifier='example-services',
+            identifier='sentinel2-rgb',
             abstract="""
             Example service that generates RGB rasters from Sentinel-2 products, using bands 4, 3, and 2 respectively.
             """,
@@ -70,10 +70,10 @@ class Sentinel2Rgb(EO4AProcess):
         """The service command. Do not do any processing here."""
         logger.info('Request inputs: %s', request.inputs)
 
-        return '%s/sentinel2rgb %s %s' % (self._module_path(),
-                                          self._get_input(request, 's2_product_dir'),
-                                          self._output_dir()
-                                          )
+        return 'bash -c %s/sentinel2rgb %s %s' % (self._module_path(),
+                                                  self._get_input(request, 's2_product_dir'),
+                                                  self._output_dir()
+                                                  )
 
 
     def set_output(self, request, response):
