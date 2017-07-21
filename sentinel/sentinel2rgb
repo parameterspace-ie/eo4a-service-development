@@ -6,6 +6,7 @@
 
 S2_PRODUCT_DIR=$1
 OUTPUT_DIR=$2
+RESOLUTION=$3
 
 if [ ! -e "$OUTPUT_DIR" ]
 then
@@ -30,6 +31,6 @@ do
     gdalbuildvrt -separate rgb.vrt $R_BAND $G_BAND $B_BAND
     gdal_translate -co COMPRESS=LZW rgb.vrt "$PREFIX"_RGB.tif
     
-    rm -rf *.SAFE rgb.vrt
+    rm -rf *.zip *.SAFE rgb.vrt
 done
     
