@@ -70,10 +70,10 @@ class Sentinel2Rgb(EO4AProcess):
         """The service command. Do not do any processing here."""
         logger.info('Request inputs: %s', request.inputs)
 
-        return 'bash -c %s/sentinel2rgb %s %s' % (self._module_path(),
-                                                  self._get_input(request, 's2_product_dir'),
-                                                  self._output_dir()
-                                                  )
+        return 'bash %s/sentinel2rgb %s %s' % (self._module_path(),
+                                               self._get_input(request, 's2_product_dir'),
+                                               self._output_dir()
+                                               )
 
 
     def set_output(self, request, response):
