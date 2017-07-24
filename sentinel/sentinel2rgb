@@ -5,8 +5,11 @@
 # TODO: validation
 
 S2_PRODUCT_DIR=$1
-OUTPUT_DIR=$2
-RESOLUTION=$3
+R_BAND=$2
+G_BAND=$3
+B_BAND=$4
+RESOLUTION=$5
+OUTPUT_DIR=$6
 
 if [ ! -e "$OUTPUT_DIR" ]
 then
@@ -22,14 +25,14 @@ do
     
     # Should handle both level 1C and 2A products
     
-    R_BAND=`find *.SAFE -type f -regex ".*$RESOLUTION.*B04.*jp2" -print|sort|head -1`
-    G_BAND=`find *.SAFE -type f -regex ".*$RESOLUTION.*B03.*jp2" -print|sort|head -1`
-    B_BAND=`find *.SAFE -type f -regex ".*$RESOLUTION.*B02.*jp2" -print|sort|head -1`
+    R_BAND_RASTER=`find *.SAFE -type f -regex ".*$RESOLUTION.*B$R_BAND.*jp2" -print|sort|head -1`
+    G_BAND_RASTER=`find *.SAFE -type f -regex ".*$RESOLUTION.*B$G_BAND.*jp2" -print|sort|head -1`
+    B_BAND_RASTER=`find *.SAFE -type f -regex ".*$RESOLUTION.*B$B_BAND.*jp2" -print|sort|head -1`
     
-    PREFIX=`basename $PRODUCT|cut -d. -f1`
+    PRODUCTPREFIX=`basename $PRODUCT|cut -d. -f1`
     
-    gdalbuildvrt -separate rgb.vrt $R_BAND $G_BAND $B_BAND
-    gdal_translate -co COMPRESS=LZW rgb.vrt "$PREFIX"_RGB.tif
+    gdalbuildvrt -separate rgb.vrt $R_BAND_RASTER $G_BAND_RASTER $B_BAND_RASTER
+    gdal_translate -co COMPRESS=LZW rgb.vrt R"$R_BAND"_G"$G_BAND"_B"$B_BAND"_"$PREFIX".tif
     
     rm -rf *.zip *.SAFE rgb.vrt
 done
