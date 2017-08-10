@@ -95,14 +95,6 @@ class Sentinel2Rgb(EO4AProcess):
         )
 
 
-    def _module_path(self):
-        """
-        Generates a relative path used to run any scripts etc as service commands.
-        TODO: move to parent
-        """
-        return os.path.dirname(self.__module__.replace('.', os.path.sep))
-
-
     def _output_dir(self):
         return os.path.join(self.output_dir, 'rgb')
     
@@ -111,7 +103,7 @@ class Sentinel2Rgb(EO4AProcess):
         """The service command. Do not do any processing here."""
         logger.info('Request inputs: %s', request.inputs)
 
-        return 'bash -x %s/sentinel2rgb %s %02d %02d %02d %s %s' % (self._module_path(),
+        return 'bash -x %s/sentinel2rgb %s %02d %02d %02d %s %s' % (self._package_path,
                                                                     self._get_input(request, 's2_product_dir'),
                                                                     # TODO: use defaults from input definitions
                                                                     self._get_input(request, 'r_band', 4),
@@ -125,7 +117,7 @@ class Sentinel2Rgb(EO4AProcess):
     def set_output(self, request, response):
         """Set the output in the WPS response."""
         output = response.outputs['rgb_dir']
-        output.data = self.get_dir_with_context(self._output_dir(), self.WORKFLOW_CONTEXT)
+        output.data = self._output_dir()#self.get_dir_with_context(self._output_dir(), self.WORKFLOW_CONTEXT)
         output.uom = UOM('unity')
         
         
