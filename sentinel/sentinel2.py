@@ -117,7 +117,7 @@ class Sentinel2Rgb(EO4AProcess):
     def set_output(self, request, response):
         """Set the output in the WPS response."""
         output = response.outputs['rgb_dir']
-        output.data = self._output_dir()#self.get_dir_with_context(self._output_dir(), self.WORKFLOW_CONTEXT)
+        output.data = self._output_dir()
         output.uom = UOM('unity')
         
         
