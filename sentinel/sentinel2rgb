@@ -32,7 +32,7 @@ do
     PRODUCTPREFIX=`basename $PRODUCT|cut -d. -f1`
     
     gdalbuildvrt -separate rgb.vrt $R_BAND_RASTER $G_BAND_RASTER $B_BAND_RASTER
-    gdal_translate -co COMPRESS=LZW rgb.vrt R"$R_BAND"_G"$G_BAND"_B"$B_BAND"_"$PREFIX".tif
+    gdal_translate -co COMPRESS=LZW rgb.vrt R"$R_BAND"_G"$G_BAND"_B"$B_BAND"_"$PRODUCTPREFIX".tif
     
     rm -rf *.zip *.SAFE rgb.vrt
 done
