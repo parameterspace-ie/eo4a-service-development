@@ -22,7 +22,7 @@ cd $OUTPUT_DIR
 
 for PRODUCT in $ABS_S2_PRODUCT_DIR/*.zip
 do
-    unzip $ABS_S2_PRODUCT_DIR/$PRODUCT
+    unzip $PRODUCT
     
     # Should handle both level 1C and 2A products
     
