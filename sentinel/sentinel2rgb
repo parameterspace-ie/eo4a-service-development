@@ -16,12 +16,13 @@ then
     mkdir $OUTPUT_DIR
 fi
 
+ABS_S2_PRODUCT_DIR=`pwd`/$S2_PRODUCT_DIR
+
 cd $OUTPUT_DIR
 
-for PRODUCT in $S2_PRODUCT_DIR/*.zip
+for PRODUCT in $ABS_S2_PRODUCT_DIR/*.zip
 do
-    cp $PRODUCT .
-    unzip $PRODUCT
+    unzip $ABS_S2_PRODUCT_DIR/$PRODUCT
     
     # Should handle both level 1C and 2A products
     
