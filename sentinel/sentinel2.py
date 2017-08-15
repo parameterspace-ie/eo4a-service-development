@@ -104,7 +104,7 @@ class Sentinel2Rgb(EO4AProcess):
         logger.info('Request inputs: %s', request.inputs)
 
         return 'bash -x %s/sentinel2rgb %s %02d %02d %02d %s %s' % (self._package_path,
-                                                                    self._get_input(request, 's2_product_dir'),
+                                                                    self._get_input(request, 's2_product_dir', path=True),
                                                                     # TODO: use defaults from input definitions
                                                                     self._get_input(request, 'r_band', 4),
                                                                     self._get_input(request, 'g_band', 3),
