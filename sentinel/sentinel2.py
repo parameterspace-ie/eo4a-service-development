@@ -113,7 +113,7 @@ class Sentinel2Rgb(EO4AProcess):
                                                                     int(self._get_input(request, 'r_band')),
                                                                     int(self._get_input(request, 'g_band')),
                                                                     int(self._get_input(request, 'b_band')),
-                                                                    self._get_input(request, 'resolution'),
+                                                                    'R%sm' % self._get_input(request, 'resolution'),
                                                                     self._output_dir(),
                                                                     )
 
