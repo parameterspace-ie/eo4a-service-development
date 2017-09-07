@@ -20,8 +20,19 @@ ABS_S2_PRODUCT_DIR=`pwd`/$S2_PRODUCT_DIR
 
 cd $OUTPUT_DIR
 
+i=0
+numproducts=`ls $ABS_S2_PRODUCT_DIR/*.zip|wc -l`
+
 for PRODUCT in $ABS_S2_PRODUCT_DIR/*.zip
 do
+    if [ ! -z "$STATUS_FILE" ]
+    then
+        i=$((i+1))
+        progress=$((i * 90 / $numproducts))
+        # <percentage> <message>
+        echo "$progress Processing `basename $PRODUCT`" > $STATUS_FILE
+    fi
+
     unzip $PRODUCT
     
     # Should handle both level 1C and 2A products
