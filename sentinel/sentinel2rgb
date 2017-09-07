@@ -30,7 +30,7 @@ do
         i=$((i+1))
         progress=$((i * 90 / $numproducts))
         # <percentage> <message>
-        echo "$progress Processing `basename $PRODUCT`" > $STATUS_FILE
+        echo "$progress Processing $i/$numproducts" > $STATUS_FILE
     fi
 
     unzip $PRODUCT
