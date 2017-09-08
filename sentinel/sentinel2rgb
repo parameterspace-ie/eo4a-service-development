@@ -2,14 +2,14 @@
 
 # Service matching the Sentinel2Rgb WPS definition.
 
-# TODO: validation
-
 S2_PRODUCT_DIR=$1
 R_BAND=$2
 G_BAND=$3
 B_BAND=$4
 RESOLUTION=$5
 OUTPUT_DIR=$6
+
+# TODO: add arg parse + validation
 
 if [ ! -e "$OUTPUT_DIR" ]
 then
@@ -22,6 +22,11 @@ cd $OUTPUT_DIR
 
 i=0
 numproducts=`ls $ABS_S2_PRODUCT_DIR/*.zip|wc -l`
+if (( numproducts <= 0 ))
+then
+    echo "No products have been found in $ABS_S2_PRODUCT_DIR"
+    exit 1
+fi    
 
 for PRODUCT in $ABS_S2_PRODUCT_DIR/*.zip
 do
@@ -40,12 +45,20 @@ do
     R_BAND_RASTER=`find *.SAFE -type f -regex ".*$RESOLUTION.*B$R_BAND.*jp2" -print|sort|head -1`
     G_BAND_RASTER=`find *.SAFE -type f -regex ".*$RESOLUTION.*B$G_BAND.*jp2" -print|sort|head -1`
     B_BAND_RASTER=`find *.SAFE -type f -regex ".*$RESOLUTION.*B$B_BAND.*jp2" -print|sort|head -1`
+
+    for raster in $R_BAND_RASTER $G_BAND_RASTER $B_BAND_RASTER
+    do
+        if [ ! -e "$raster" ]
+        then
+            echo "Required band raster is not found in $PRODUCT archive: $raster"
+            exit 1
+        fi
+    done
     
     PRODUCTPREFIX=`basename $PRODUCT|cut -d. -f1`
     
-    gdalbuildvrt -separate rgb.vrt $R_BAND_RASTER $G_BAND_RASTER $B_BAND_RASTER
-    gdal_translate -co COMPRESS=LZW rgb.vrt R"$R_BAND"_G"$G_BAND"_B"$B_BAND"_"$PRODUCTPREFIX".tif
+    gdal_merge.py -separate -co PHOTOMETRIC=RGB -co COMPRESS=LZW -o R"$R_BAND"_G"$G_BAND"_B"$B_BAND"_"$PRODUCTPREFIX".tif $R_BAND_RASTER $G_BAND_RASTER $B_BAND_RASTER
     
-    rm -rf *.zip *.SAFE rgb.vrt
+    rm -rf *.SAFE
 done
     
