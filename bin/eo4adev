@@ -1,0 +1,163 @@
+#!/usr/bin/env bash
+
+DOCKER_REPO_SERVER=repositories.eo4a.science
+STANDALONE_CONTAINER=$DOCKER_REPO_SERVER/eo4a-service-framework-standalone:develop
+CONTAINER_NAME=eo4a-standalone
+EO4A_DEV_DOMAIN=eo4a.local
+EO4A_BASEDIR=$HOME/eo4a
+HOST_EO4A_WPS_PORT=18880
+HOST_EO4A_JUPYTER_PORT=18888
+EO4A_WPS_URL=$EO4A_DEV_DOMAIN:$HOST_EO4A_WPS_PORT
+CONTAINER_EO4A_BASEDIR=/opt/eo4a
+# Directories
+: ${EO4A_SERVICES_DIR:=$EO4A_BASEDIR/services}
+: ${EO4A_DATA_DIR:=$EO4A_BASEDIR/data}
+: ${EO4A_NOTEBOOKS_DIR:=$EO4A_BASEDIR/notebooks}
+EO4A_SERVICE_DATA_DIR=$EO4A_DATA_DIR/service
+
+
+function banner {
+    echo
+    printf '\033[0;36m'
+    echo "------------------------------------------------------------"
+    echo $1
+    echo "------------------------------------------------------------"
+    printf '\033[0m'
+}
+
+function s_continue {
+    printf '\033[1;33m'
+    read -n 1 -s -p "Press any key to continue"
+    printf '\033[0m'
+}
+
+# Check that docker is installed on the machine
+function check_docker {
+    banner "Checking Docker installation"
+    docker version > /dev/null 2>&1
+    code=$?
+    if [[ $code -eq 127 ]]; then
+        echo "ERROR - Docker is missing, you must install it first: https://www.docker.com/community-edition"
+        exit 1
+    fi
+    echo "Docker is available"
+    if [ $? -ne 0 ]; then
+        echo "ERROR - Unable to talk to the docker daemon. You might need 'sudo' privileges"
+        exit 3
+    fi
+}
+
+function check_hosts {
+    banner "Checking local service development domain has been set in HOSTS"
+    ping -c 1 $EO4A_DEV_DOMAIN > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        echo "Can't resolve $EO4A_DEV_DOMAIN in your HOSTS"
+        echo "Add the following line to your /etc/hosts:"
+        echo -e "\t 127.0.0.1   $EO4A_DEV_DOMAIN"
+        exit 1
+    fi
+    echo "$EO4A_DEV_DOMAIN resolves"
+}
+# Check the directories we are going to mount exist
+function check_development_dirs {
+    banner "Checking Development directories"
+    echo "The following directories will be used (and created if necessary):"
+    echo -e "\t Services directory: $EO4A_SERVICES_DIR (export EO4A_SERVICES_DIR to override)"
+    echo -e "\t Data volume: $EO4A_DATA_DIR (export EO4A_DATA_DIR to override)"
+    echo -e "\t Notebooks directory: $EO4A_NOTEBOOKS_DIR (export EO4A_NOTEBOOKS_DIR to override)"
+    [[ ! -d $EO4A_SERVICES_DIR || ! -d $EO4A_SERVICE_DATA_DIR || ! -d $EO4A_NOTEBOOKS_DIR ]] && s_continue
+    mkdir -p $EO4A_SERVICE_DATA_DIR
+    mkdir -p $EO4A_SERVICES_DIR
+    mkdir -p $EO4A_NOTEBOOKS_DIR
+}
+
+# Go get the image
+function acquire_standalone_container {
+    banner "Retrieving the EO4A Service container image"
+    printf "WARNING: make sure you have already run 'docker login $DOCKER_REPO_SERVER -u guest -p <password>'\n"
+    #docker login $DOCKER_REPO_SERVER -u guest -p notset
+    echo "Pulling the container image: $STANDALONE_CONTAINER"
+    docker pull $STANDALONE_CONTAINER > /dev/null
+    if [ $? -ne 0 ]; then
+        echo "ERROR - Something went wrong while pulling the image. Please ensure you have run the 'docker login' command. Otherwise, contact (info [at] parameterspace.ie) for help."
+        exit 1
+    fi
+}
+
+# Check service container exists already
+function check_container_running_and_start {
+    banner "Checking/starting the service container "
+    docker ps -a -f name=$CONTAINER_NAME | grep $CONTAINER_NAME > /dev/null
+    if [[ $? -eq 0 ]]; then
+        echo "It looks like a EO4A service container already exists (status=$(docker inspect --format="{{.State.Status}}" $CONTAINER_NAME))."
+        echo "It won't be replaced at this time. You can:"
+        echo -e "\tStart it (if not running) by running 'docker start $CONTAINER_NAME'"
+        echo -e "\tRemove it by running 'docker rm $CONTAINER_NAME'"
+        echo -e "\tStop it by running 'docker stop $CONTAINER_NAME'"
+        echo -e "\tRerun $0"
+
+        if [[ $(docker inspect --format="{{.State.Running}}" $CONTAINER_NAME) == "false" ]]; then
+            echo "Attempting to start container..."
+            docker start $CONTAINER_NAME
+        fi
+    else 
+        start_container
+    fi
+}
+
+# Start up the container
+function start_container {
+    docker run -d \
+        --name $CONTAINER_NAME \
+        -v $EO4A_SERVICES_DIR:$CONTAINER_EO4A_BASEDIR/services:ro \
+        -v $EO4A_DATA_DIR:$CONTAINER_EO4A_BASEDIR/data:rw \
+        -v $EO4A_NOTEBOOKS_DIR:$CONTAINER_EO4A_BASEDIR/notebooks:rw \
+        --add-host="eo4a.local:127.0.0.1" \
+        -p $HOST_EO4A_WPS_PORT:80 -p $HOST_EO4A_JUPYTER_PORT:8888 \
+        $STANDALONE_CONTAINER
+
+    if [ $? -ne 0 ]; then
+        echo "ERROR - Something went wrong while creating the container. Contact (info [at] parameterspace.ie) for help."
+        exit 1
+    fi
+}
+
+function wait_active {
+    banner "Waiting for service container to respond..."
+    until $(curl --output /dev/null --silent --head --fail http://$EO4A_WPS_URL); do
+        printf '.'
+        sleep .5
+    done
+    echo "It's up"
+}
+
+function reload_capabilities {
+    banner "Reloading the available WPS services"
+    sleep 3
+    curl -L "http://$EO4A_WPS_URL/wps?service=wps&request=reloadcapabilities"
+}
+
+function finish_up {
+    banner "FINISHED"
+    echo "Jupyter notebooks are used to execute services, and are available at:"
+    echo -e "\t http://$EO4A_DEV_DOMAIN:$HOST_EO4A_JUPYTER_PORT/tree"
+    echo ""
+    echo "If required, WPS access to the services (as used by the notebooks) is also available at:"
+    echo -e "\t http://$EO4A_WPS_URL/wps"
+    echo ""
+    echo "Now follow the Service Development section in the EO4Atlantic user guide:"
+    echo -e "\t http://docs.eo4a.science"
+}
+
+####################
+# Main
+####################
+banner "EO4Atlantic Service Development"
+check_docker
+check_hosts
+check_development_dirs
+acquire_standalone_container
+check_container_running_and_start
+wait_active
+reload_capabilities #; s_continue
+finish_up
