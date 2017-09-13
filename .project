@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>eo4a-example-services</name>
+	<name>eo4a-service-development</name>
 	<comment></comment>
 	<projects>
 		<project>eo4a-execution-environment</project>
