@@ -93,8 +93,8 @@ function check_container_running_and_start {
         echo "It looks like a EO4A service container already exists (status=$(docker inspect --format="{{.State.Status}}" $CONTAINER_NAME))."
         echo "It won't be replaced at this time. You can:"
         echo -e "\tStart it (if not running) by running 'docker start $CONTAINER_NAME'"
-        echo -e "\tRemove it by running 'docker rm $CONTAINER_NAME'"
         echo -e "\tStop it by running 'docker stop $CONTAINER_NAME'"
+        echo -e "\tRemove it by running 'docker rm $CONTAINER_NAME'"
         echo -e "\tRerun $0"
 
         if [[ $(docker inspect --format="{{.State.Running}}" $CONTAINER_NAME) == "false" ]]; then
