@@ -92,7 +92,7 @@ class Sentinel2Rgb(EO4AProcess):
             """,
             version='0.1',
             title="Sentinel-2 RGB",
-            metadata=[Metadata('Sentinel')],
+            metadata=[Metadata('Raster')],
             profile='',
             inputs=inputs,
             outputs=outputs,

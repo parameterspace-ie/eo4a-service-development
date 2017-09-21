@@ -55,7 +55,7 @@ class MergeShapefiles(EO4AProcess):
             """,
             version='0.1',
             title="Merge Shapefiles",
-            metadata=[Metadata(x) for x in ['OGR', 'Vector']],
+            metadata=[Metadata('Vector')],
             profile='',
             inputs=inputs,
             outputs=outputs,
