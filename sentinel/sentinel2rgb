@@ -1,0 +1,64 @@
+#!/bin/sh -x
+
+# Service matching the Sentinel2Rgb WPS definition.
+
+S2_PRODUCT_DIR=$1
+R_BAND=$2
+G_BAND=$3
+B_BAND=$4
+RESOLUTION=$5
+OUTPUT_DIR=$6
+
+# TODO: add arg parse + validation
+
+if [ ! -d "$OUTPUT_DIR" ]
+then
+    mkdir -p $OUTPUT_DIR
+fi
+
+ABS_S2_PRODUCT_DIR=`pwd`/$S2_PRODUCT_DIR
+
+cd $OUTPUT_DIR
+
+i=0
+numproducts=`ls $ABS_S2_PRODUCT_DIR/*.zip|wc -l`
+if (( numproducts <= 0 ))
+then
+    echo "No products have been found in $ABS_S2_PRODUCT_DIR"
+    exit 1
+fi    
+
+for PRODUCT in $ABS_S2_PRODUCT_DIR/*.zip
+do
+    if [ ! -z "$STATUS_FILE" ]
+    then
+        i=$((i+1))
+        progress=$((i * 90 / $numproducts))
+        # <percentage> <message>
+        echo "$progress Processing $i/$numproducts" > $STATUS_FILE
+    fi
+
+    unzip $PRODUCT
+    
+    # Should handle both level 1C and 2A products
+    
+    R_BAND_RASTER=`find *.SAFE -type f -regex ".*$RESOLUTION.*B$R_BAND.*jp2" -print|sort|head -1`
+    G_BAND_RASTER=`find *.SAFE -type f -regex ".*$RESOLUTION.*B$G_BAND.*jp2" -print|sort|head -1`
+    B_BAND_RASTER=`find *.SAFE -type f -regex ".*$RESOLUTION.*B$B_BAND.*jp2" -print|sort|head -1`
+
+    for raster in $R_BAND_RASTER $G_BAND_RASTER $B_BAND_RASTER
+    do
+        if [ ! -e "$raster" ]
+        then
+            echo "Required band raster is not found in $PRODUCT archive: $raster"
+            exit 1
+        fi
+    done
+    
+    PRODUCTPREFIX=`basename $PRODUCT|cut -d. -f1`
+    
+    gdal_merge.py -separate -co PHOTOMETRIC=RGB -co COMPRESS=LZW -o R"$R_BAND"_G"$G_BAND"_B"$B_BAND"_"$PRODUCTPREFIX".tif $R_BAND_RASTER $G_BAND_RASTER $B_BAND_RASTER
+    
+    rm -rf *.SAFE
+done
+    
