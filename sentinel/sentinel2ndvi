@@ -1,0 +1,81 @@
+#!/bin/sh -x
+
+# Service matching the Sentinel2Ndvi WPS definition.
+
+S2_PRODUCT_DIR=$1
+A_BAND=$2
+B_BAND=$3
+RESOLUTION=$4
+OUTPUT_DIR=$5
+
+# TODO: add arg parse + validation
+
+if [ ! -d "$OUTPUT_DIR" ]
+then
+    mkdir -p $OUTPUT_DIR
+fi
+
+ABS_S2_PRODUCT_DIR=`pwd`/$S2_PRODUCT_DIR
+
+cd $OUTPUT_DIR
+
+i=0
+numproducts=`ls $ABS_S2_PRODUCT_DIR/*.zip|wc -l`
+if (( numproducts <= 0 ))
+then
+    echo "No products have been found in $ABS_S2_PRODUCT_DIR"
+    exit 1
+fi    
+
+function find_raster {
+    echo "`find *.SAFE -type f -regex ".*$1.*B$2.*jp2" -print|sort|head -1`"
+}
+    
+    
+function preprocess_raster {
+    RASTER_BAND=$1
+    if [ "$RASTER_BAND" == "08" ]
+    then
+        B08_R10_RASTER=$(find_raster "R10m" "08")
+        NEW_RES=`echo $RESOLUTION|cut -dR -f2|cut -dm -f1`
+        PROCESSED_RASTER=/tmp/B08_"$RESOLUTION".tif
+        gdalwarp -overwrite -co COMPRESS=LZW -tr $NEW_RES $NEW_RES $B08_R10_RASTER $PROCESSED_RASTER > /dev/null 2>&1
+    else
+        PROCESSED_RASTER=$(find_raster $RESOLUTION $RASTER_BAND)
+    fi
+    
+    echo "$PROCESSED_RASTER"
+}
+
+
+for PRODUCT in $ABS_S2_PRODUCT_DIR/*.zip
+do
+    if [ ! -z "$STATUS_FILE" ]
+    then
+        i=$((i+1))
+        progress=$((i * 90 / $numproducts))
+        # <percentage> <message>
+        echo "$progress Processing $i/$numproducts" > $STATUS_FILE
+    fi
+
+    unzip $PRODUCT
+    
+    # Should handle level 1C - 3A
+    A_BAND_RASTER=$(preprocess_raster $A_BAND)
+    B_BAND_RASTER=$(preprocess_raster $B_BAND)
+    
+    for raster in $A_BAND_RASTER $B_BAND_RASTER $B_BAND_RASTER
+    do
+        if [ ! -e "$raster" ]
+        then
+            echo "Required band raster is not found in $PRODUCT archive: $raster"
+            exit 1
+        fi
+    done
+    
+    PRODUCTPREFIX=`basename $PRODUCT|cut -d. -f1`
+    gdal_calc.py --overwrite -A $A_BAND_RASTER --A_band=1 -B $B_BAND_RASTER --B_band=1 --outfile=ndvi_"$A_BAND"_"$B_BAND"_"$PRODUCTPREFIX".tif --calc="((A*1.0)-B)/((A*1.0)+B)" --type="Float32"
+    
+    rm -rf *.SAFE
+done
+    
