@@ -211,7 +211,7 @@ class Sentinel2Ndvi(EO4AProcess):
         logger.info('Request inputs: %s', request.inputs)
 
         def get_band(band):
-            band_val = self._get_input(request, band).higher()
+            band_val = str(self._get_input(request, band).higher())
             if band_val != '8A':
                 band_val =  '%02d' % int(band_val)
             return band_val
