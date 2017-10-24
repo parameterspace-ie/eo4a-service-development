@@ -187,7 +187,7 @@ class Sentinel2Ndvi(EO4AProcess):
             )
         ]
 
-        super(Sentinel2Rgb, self).__init__(
+        super(Sentinel2Ndvi, self).__init__(
             identifier='sentinel2-ndvi',
             abstract="""
             Example service that generates NDVI rasters from Sentinel-2 products with (A-B)/(A+B), using A = band 8 and B = band 4 by default. 
