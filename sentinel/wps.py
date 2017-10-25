@@ -10,6 +10,7 @@ __author__ = "Derek O'Callaghan"
 
 logger = logging.getLogger('PYWPS')
 
+NDVI_RESOLUTIONS = [20, 60]
 
 class Sentinel2Rgb(EO4AProcess):
     """
@@ -211,6 +212,10 @@ class Sentinel2Ndvi(EO4AProcess):
         """The service command. Do not do any processing here."""
         logger.info('Request inputs: %s', request.inputs)
 
+        resolution = self._get_input(request, 'resolution')
+        if resolution not in NDVI_RESOLUTIONS:
+            raise ValueError('Resolution must be one of %s, %s was specified' % (NDVI_RESOLUTIONS, resolution))
+
         def get_band(band):
             band_val = str(self._get_input(request, band)).upper()
             if band_val != '8A':
@@ -222,7 +227,7 @@ class Sentinel2Ndvi(EO4AProcess):
                                                                     # TODO: use defaults from input definitions
                                                                     get_band('nir_band'),
                                                                     get_band('red_band'),
-                                                                    'R%sm' % self._get_input(request, 'resolution'),
+                                                                    'R%sm' % resolution,
                                                                     self._output_dir(),
                                                                     )
 
