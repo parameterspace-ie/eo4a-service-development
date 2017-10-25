@@ -145,7 +145,7 @@ class Sentinel2Ndvi(EO4AProcess):
             LiteralInput(
                 'nir_band',
                 'NIR band',
-                data_type='integer',
+                data_type='string',
                 abstract="""
                 NIR band number (default=8).
                 """,
@@ -156,7 +156,7 @@ class Sentinel2Ndvi(EO4AProcess):
             LiteralInput(
                 'red_band',
                 'Red band',
-                data_type='integer',
+                data_type='string',
                 abstract="""
                 Red band number (default=4).
                 """,
