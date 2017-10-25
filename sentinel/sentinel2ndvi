@@ -80,7 +80,7 @@ do
     done
     
     PRODUCTPREFIX=`basename $PRODUCT|cut -d. -f1`
-    gdal_calc.py --overwrite -A $A_BAND_RASTER --A_band=1 -B $B_BAND_RASTER --B_band=1 --outfile=ndvi_"$A_BAND"_"$B_BAND"_"$RESOLUTION"m_"$PRODUCTPREFIX".tif --calc="((A*1.0)-B)/((A*1.0)+B)" --type="Float32"
+    gdal_calc.py --overwrite -A $A_BAND_RASTER --A_band=1 -B $B_BAND_RASTER --B_band=1 --outfile=ndvi_"$A_BAND"_"$B_BAND"_"$RESOLUTION"_"$PRODUCTPREFIX".tif --calc="((A*1.0)-B)/((A*1.0)+B)" --type="Float32"
     
     rm -rf *.SAFE
 done
