@@ -167,11 +167,12 @@ class Sentinel2Ndvi(EO4AProcess):
             ),
             LiteralInput(
                 'resolution',
-                'Sentinel-2 product resolution, one of [10, 20, 60], default = 60.',
+                'Sentinel-2 product resolution, one of [20, 60], default = 60.',
                 data_type='integer',
                 abstract="""
                 The default resolution of 60m is used for Sentinel-2 products, as this generates rasters of manageable size for the pathfinder.
-                Note that band 8 will be resampled from 10m if values of 20 or 60 are specified.
+                Note that band 8 will be resampled from 10m if it is specified as the NIR or Red band. 10m resolution will not be supported for
+                the pathfinder, as it may require band resampling, and lead to large rasters.
                 """,
                 default="60",
                 min_occurs=0,
@@ -217,7 +218,7 @@ class Sentinel2Ndvi(EO4AProcess):
             raise ValueError('Resolution must be one of %s, %s was specified' % (NDVI_RESOLUTIONS, resolution))
 
         def get_band(band):
-            band_val = str(self._get_input(request, band)).upper()
+            band_val = str(self._get_input(request, band)).upper().strip()
             if band_val != '8A':
                 band_val =  '%02d' % int(band_val)
             return band_val

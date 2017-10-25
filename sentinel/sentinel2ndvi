@@ -27,6 +27,12 @@ then
     exit 1
 fi    
 
+if [ "$A_BAND" == "$B_BAND" ]
+then
+    echo "Different bands must be specified ($A_BAND = $BAND)"
+    exit 1
+fi
+
 function find_raster {
     echo "`find *.SAFE -type f -regex ".*$1.*B$2.*jp2" -print|sort|head -1`"
 }
