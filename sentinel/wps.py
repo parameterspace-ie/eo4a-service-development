@@ -143,22 +143,22 @@ class Sentinel2Ndvi(EO4AProcess):
                 max_occurs=1,
             ),
             LiteralInput(
-                'a_band',
-                'A band',
+                'nir_band',
+                'NIR band',
                 data_type='integer',
                 abstract="""
-                A band number (default=8).,
+                NIR band number (default=8).,
                 """,
                 default="8",
                 min_occurs=0,
                 max_occurs=1,
             ),
             LiteralInput(
-                'b_band',
-                'B band',
+                'red_band',
+                'Red band',
                 data_type='integer',
                 abstract="""
-                B band number (default=4).,
+                Red band number (default=4).,
                 """,
                 default="4",
                 min_occurs=0,
@@ -190,7 +190,7 @@ class Sentinel2Ndvi(EO4AProcess):
         super(Sentinel2Ndvi, self).__init__(
             identifier='sentinel2-ndvi',
             abstract="""
-            Example service that generates NDVI rasters from Sentinel-2 products with (A-B)/(A+B), using A = band 8 and B = band 4 by default. 
+            Example service that generates Normalized Difference Vegetation Index (NDVI) rasters from Sentinel-2 products with NDVI = (NIR-Red)/(NIR+Red), using NIR = band 8 and Red = band 4 by default. 
             However, alternative band numbers may also be specified.
             """,
             version='0.1',
@@ -219,8 +219,8 @@ class Sentinel2Ndvi(EO4AProcess):
         return 'bash -x %s/sentinel2ndvi %s %s %s %s %s' % (self._package_path,
                                                                     self._get_input(request, 's2_product_dir'),
                                                                     # TODO: use defaults from input definitions
-                                                                    get_band('a_band'),
-                                                                    get_band('b_band'),
+                                                                    get_band('nir_band'),
+                                                                    get_band('red_band'),
                                                                     'R%sm' % self._get_input(request, 'resolution'),
                                                                     self._output_dir(),
                                                                     )
