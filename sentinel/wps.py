@@ -169,7 +169,7 @@ class Sentinel2Ndvi(EO4AProcess):
                 'Sentinel-2 product resolution, one of [10, 20, 60], default = 60.',
                 data_type='integer',
                 abstract="""
-                The default resolution of 60m is used for Sentinel-2 products, as this generates raster layers of manageable size for the pathfinder.
+                The default resolution of 60m is used for Sentinel-2 products, as this generates rasters of manageable size for the pathfinder.
                 Note that band 8 will be resampled from 10m if values of 20 or 60 are specified.
                 """,
                 default="60",
