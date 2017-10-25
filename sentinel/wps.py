@@ -151,7 +151,7 @@ class Sentinel2Ndvi(EO4AProcess):
                 NIR band number (default=8).
                 """,
                 default="8",
-                min_occurs=0,
+                min_occurs=1,
                 max_occurs=1,
             ),
             LiteralInput(
@@ -162,7 +162,7 @@ class Sentinel2Ndvi(EO4AProcess):
                 Red band number (default=4).
                 """,
                 default="4",
-                min_occurs=0,
+                min_occurs=1,
                 max_occurs=1,
             ),
             LiteralInput(
@@ -175,7 +175,7 @@ class Sentinel2Ndvi(EO4AProcess):
                 the pathfinder, as it may require band resampling, and lead to large rasters.
                 """,
                 default="60",
-                min_occurs=0,
+                min_occurs=1,
                 max_occurs=1,
             ),
         ]

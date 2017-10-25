@@ -29,7 +29,7 @@ fi
 
 if [ "$A_BAND" == "$B_BAND" ]
 then
-    echo "Different bands must be specified ($A_BAND = $BAND)"
+    echo "Different bands must be specified ($A_BAND = $B_BAND)"
     exit 1
 fi
 
