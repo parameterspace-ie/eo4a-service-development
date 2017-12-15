@@ -28,6 +28,32 @@ then
     exit 1
 fi    
 
+function find_raster {
+    PRODUCT=$1
+    RESOLUTION=$2
+    BAND=$3
+    
+    if [[ $PRODUCT == *"MSIL1C"* ]]
+    then
+        # L1C product archives don't include the 'Rxx' directories
+        FIND_RES=""
+    else
+        FIND_RES=$RESOLUTION
+    fi
+    RASTER=`find *.SAFE -type f -regex ".*$FIND_RES.*B$BAND.*jp2" -print|sort|head -1`
+    if [[ $PRODUCT == *"MSIL1C"* ]]
+    then
+        # Resample, as e.g. the default bands 4, 3, 2 are 10m
+        gdalwarp -co COMPRESS=LZW -overwrite -tr $RESOLUTION $RESOLUTION $RASTER /tmp/tmp.tif
+        RASTER="/tmp/resampled_$RASTER"
+        gdal_translate -of JP2OpenJpeg /tmp/tmp.tif $RASTER
+        rm /tmp/tmp.tif
+    fi
+    
+    echo $RASTER
+}
+
+
 for PRODUCT in $ABS_S2_PRODUCT_DIR/*.zip
 do
     if [ ! -z "$STATUS_FILE" ]
@@ -40,21 +66,34 @@ do
 
     unzip $PRODUCT
     
-    # Should handle both level 1C and 2A products
+    # Should handle level 1C, 2A/3A products
     
-    R_BAND_RASTER=`find *.SAFE -type f -regex ".*$RESOLUTION.*B$R_BAND.*jp2" -print|sort|head -1`
-    G_BAND_RASTER=`find *.SAFE -type f -regex ".*$RESOLUTION.*B$G_BAND.*jp2" -print|sort|head -1`
-    B_BAND_RASTER=`find *.SAFE -type f -regex ".*$RESOLUTION.*B$B_BAND.*jp2" -print|sort|head -1`
+    # TODO: remove this once both 1C and 2A/3A products have been tested
+#    R_BAND_RASTER=`find *.SAFE -type f -regex ".*$RESOLUTION.*B$R_BAND.*jp2" -print|sort|head -1`
+#    G_BAND_RASTER=`find *.SAFE -type f -regex ".*$RESOLUTION.*B$G_BAND.*jp2" -print|sort|head -1`
+#    B_BAND_RASTER=`find *.SAFE -type f -regex ".*$RESOLUTION.*B$B_BAND.*jp2" -print|sort|head -1`
 
-    for raster in $R_BAND_RASTER $G_BAND_RASTER $B_BAND_RASTER
-    do
-        if [ ! -e "$raster" ]
-        then
-            echo "Required band raster is not found in $PRODUCT archive: $raster"
-            exit 1
-        fi
-    done
-    
+    R_BAND_RASTER=`find_raster $PRODUCT $RESOLUTION $R_BAND`
+    if [ ! -e "$R_BAND_RASTER" ]
+    then
+        echo "Required raster for red band $R_BAND is not found in $PRODUCT archive"
+        exit 1
+    fi
+
+    G_BAND_RASTER=`find_raster $PRODUCT $RESOLUTION $G_BAND`
+    if [ ! -e "$G_BAND_RASTER" ]
+    then
+        echo "Required raster for green band $G_BAND is not found in $PRODUCT archive"
+        exit 1
+    fi
+
+    B_BAND_RASTER=`find_raster $PRODUCT $RESOLUTION $B_BAND`
+    if [ ! -e "$B_BAND_RASTER" ]
+    then
+        echo "Required raster for blue band $B_BAND is not found in $PRODUCT archive"
+        exit 1
+    fi
+
     PRODUCTPREFIX=`basename $PRODUCT|cut -d. -f1`
     
     gdal_merge.py -separate -co PHOTOMETRIC=RGB -co COMPRESS=LZW -o R"$R_BAND"_G"$G_BAND"_B"$B_BAND"_"$PRODUCTPREFIX".tif $R_BAND_RASTER $G_BAND_RASTER $B_BAND_RASTER
