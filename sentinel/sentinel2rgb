@@ -46,9 +46,9 @@ function find_raster {
         # Resample, as e.g. the default bands 4, 3, 2 are 10m
         # RESOLUTION = e.g. R60m
         RES=`echo $RESOLUTION|cut -dR -f2|cut -dm -f1`
-        gdalwarp -co COMPRESS=LZW -overwrite -tr $RES $RES $RASTER /tmp/tmp.tif
+        gdalwarp -co COMPRESS=LZW -overwrite -tr $RES $RES $RASTER /tmp/tmp.tif > /dev/null 2>&1
         RASTER="/tmp/resampled_$(basename $RASTER)"
-        gdal_translate -of JP2OpenJpeg /tmp/tmp.tif $RASTER
+        gdal_translate -of JP2OpenJpeg /tmp/tmp.tif $RASTER > /dev/null 2>&1
         rm /tmp/tmp.tif
     fi
     
