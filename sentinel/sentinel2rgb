@@ -47,7 +47,7 @@ function find_raster {
         # RESOLUTION = e.g. R60m
         RES=`echo $RESOLUTION|cut -dR -f2|cut -dm -f1`
         gdalwarp -co COMPRESS=LZW -overwrite -tr $RES $RES $RASTER /tmp/tmp.tif
-        RASTER="/tmp/resampled_$RASTER"
+        RASTER="/tmp/resampled_$(basename $RASTER)"
         gdal_translate -of JP2OpenJpeg /tmp/tmp.tif $RASTER
         rm /tmp/tmp.tif
     fi
