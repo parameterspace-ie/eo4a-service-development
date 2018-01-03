@@ -44,7 +44,9 @@ function find_raster {
     if [[ $PRODUCT == *"MSIL1C"* ]]
     then
         # Resample, as e.g. the default bands 4, 3, 2 are 10m
-        gdalwarp -co COMPRESS=LZW -overwrite -tr $RESOLUTION $RESOLUTION $RASTER /tmp/tmp.tif
+        # RESOLUTION = e.g. R60m
+        RES=`echo $RESOLUTION|cut -dR -f2|cut -dm -f1`
+        gdalwarp -co COMPRESS=LZW -overwrite -tr $RES $RES $RASTER /tmp/tmp.tif
         RASTER="/tmp/resampled_$RASTER"
         gdal_translate -of JP2OpenJpeg /tmp/tmp.tif $RASTER
         rm /tmp/tmp.tif
