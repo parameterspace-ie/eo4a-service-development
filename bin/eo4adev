@@ -66,10 +66,10 @@ function check_development_dirs {
     echo -e "\t Services directory: $EO4A_SERVICES_DIR (export EO4A_SERVICES_DIR to override)"
     echo -e "\t Data volume: $EO4A_DATA_DIR (export EO4A_DATA_DIR to override)"
     echo -e "\t Notebooks directory: $EO4A_NOTEBOOKS_DIR (export EO4A_NOTEBOOKS_DIR to override)"
-    [[ ! -d $EO4A_SERVICES_DIR || ! -d $EO4A_SERVICE_DATA_DIR || ! -d $EO4A_NOTEBOOKS_DIR ]] && s_continue
     mkdir -p $EO4A_SERVICE_DATA_DIR
     mkdir -p $EO4A_SERVICES_DIR
     mkdir -p $EO4A_NOTEBOOKS_DIR
+    echo -e "Directories created (or already exist)"
 }
 
 # Go get the image
@@ -97,10 +97,7 @@ function check_container_running_and_start {
         echo -e "\tRemove it by running 'docker rm $CONTAINER_NAME'"
         echo -e "\tRerun $0"
 
-        if [[ $(docker inspect --format="{{.State.Running}}" $CONTAINER_NAME) == "false" ]]; then
-            echo "Attempting to start container..."
-            docker start $CONTAINER_NAME
-        fi
+        exit 1
     else 
         start_container
     fi
@@ -134,7 +131,7 @@ function wait_active {
 
 function reload_capabilities {
     banner "Reloading the available WPS services"
-    sleep 3
+    sleep 10
     curl -L "http://$EO4A_WPS_URL/wps?service=wps&request=reloadcapabilities"
 }
 
